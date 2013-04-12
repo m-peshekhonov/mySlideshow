@@ -14,11 +14,11 @@ $(function() {
         loading = $('.loading'),
         counterPhotos = $('.album__current-photo'),
         autoplay = $('.autoplay'),
-        setActive = 0,
+        setActive = 0, // активнная фотка
+        thumbDataId,
         speed = 450,
-        scrollLength = 0,
-        nextImages = 30,
-        lastImg,
+        nextImages = 30, // id фоток
+        lastImg, //последняя фотка
         nextLink = 'http://api-fotki.yandex.ru/api/users/aig1001/album/63684/photos/?limit=30&format=json';
 
     function alignPhoto(param) {
@@ -37,14 +37,6 @@ $(function() {
         }, 800);
     });
 
-    function scrollItems(elem, length) {
-        ($(elem).hasClass('box__thumb-arrow_direction_right')) ?
-            scrollLength += length :
-            scrollLength -= length;
-
-        scrollBar.animate({'scrollLeft': '+' + scrollLength}, speed);
-    }
-
     function slider(param) {
         var boxControlRight = (param.hasClass('box__control_direction_right')),
             boxControlLeft = (param.hasClass('box__control_direction_left')),
@@ -52,23 +44,22 @@ $(function() {
             activeFullImg = $('.full-photo_state_active'),
             activeThumbImg = $('.box__mini_state_active'),
             alignFullPhoto = photoWrapper.width()/2 - activeFullImg.width()/2,
-            _thisHash;
+            _thisDadaId;
             photoThumb = $('.box__mini');
 
-            if (!boxControls) { var lastThisImg = param.index() < activeThumbImg.index(); }
-
+            if (!boxControls) { var lastThisImg = param.index() < activeThumbImg.index(); } // фотки, которые левее, чем активаня фотка
 
             boxControls ? param.addClass('box__control_disabled_yes') : param.addClass('box__mini_disabled_yes');
 
             (boxControlLeft || lastThisImg) ? activeFullImg.css({ 'left': '', 'right':  alignFullPhoto }) :
                              activeFullImg.css({ 'right': '', 'left':  alignFullPhoto });
 
-            _thisHash = boxControls ?
-                (boxControlRight ? ($('.box__mini_state_active').next().attr('hash')) :
-                                   ($('.box__mini_state_active').prev().attr('hash'))) :
-                param.attr('hash');
+            _thisDadaId = boxControls ?
+                (boxControlRight ? ($('.box__mini_state_active').next().attr('data-id')) :
+                                   ($('.box__mini_state_active').prev().attr('data-id'))) :
+                param.attr('data-id');
 
-                setActive = Number(_thisHash);
+                setActive = Number(_thisDadaId);
                 localStorage.setItem('active', setActive);
 
                 counterPhotos.text(setActive + 1);
@@ -83,23 +74,20 @@ $(function() {
                                 .prev()
                                 .addClass('box__mini_state_active');
 
-        if (activeFullImg.attr('id') !== _thisHash) {
+        if (activeFullImg.attr('id') !== _thisDadaId) {
             activeFullImg = $('.full-photo_state_active');
-            activeThumbImg = $('.box__mini_state_active');
 
             (boxControlLeft || lastThisImg) ? activeFullImg.animate({'right': '-' + activeFullImg.width()}, speed) :
                              activeFullImg.animate({'left': '-' + activeFullImg.width()}, speed);
 
                 setTimeout(function() {
-                    activeFullImg.removeAttr('style').removeAttr('class');
+                    activeFullImg.removeAttr('style').removeClass('full-photo_state_active');
                 }, speed + 50);
 
-                activePhoto = $('.box__photo-item ').find('#'+_thisHash);
+                activePhoto = $('.box__photo-item ').find('#'+_thisDadaId);
                 activePhoto
                     .addClass('full-photo_state_active')
-                    .css({
-                        'margin-top': photoWrapper.height()/2 - activePhoto.height()/2
-                    })
+                    .css('margin-top', photoWrapper.height()/2 - activePhoto.height()/2)
                     .show();
 
                 alignFullPhoto = photoWrapper.width()/2 - activePhoto.width()/2;
@@ -127,6 +115,13 @@ $(function() {
                           photoThumb.removeClass('box__mini_disabled_yes');
         }, speed);
         disableArrow();
+
+        thumbDataId = $('.box__mini_state_active').attr('data-id');
+        alignThumb(thumbDataId);
+    }
+
+    function alignThumb(imgId) {
+        scrollBar.animate({'scrollLeft': '+' + imgId*77 - photoWrapper.width()/2 + 38.5}, speed);
     }
 
     function disableArrow() {
@@ -161,13 +156,14 @@ $.getJSON(nextLink+'&callback=?', function (data){
         }
 
         $.when(getTitle()).done(function() {
-            $('.album').removeClass('album_visibility_hidden');
+            album.removeClass('album_visibility_hidden');
         });
 
         var itemActive = localStorage.getItem('active');
-            itemActive == null && (itemActive = 0);
+            itemActive == null && (itemActive = 0); // для первой загрузки
             itemActive > data.entries.length && (itemActive = 0);
 
+        alignThumb(itemActive); // выравниваем активную фотку по центру
         counterPhotos.text(Number(itemActive) + 1);
 
         function getThumbPhotos() {
@@ -175,7 +171,7 @@ $.getJSON(nextLink+'&callback=?', function (data){
                 $('<div>')
                     .addClass('box__mini')
                     .attr({
-                        hash: i,
+                        'data-id': i,
                         title: data.entries[i].title
                     })
                     .css('background-image', 'url(' +data.entries[i].img.XS.href+ ')')
@@ -250,11 +246,11 @@ $.getJSON(nextLink+'&callback=?', function (data){
     })
     .complete(function() {
         function loadPicture(count) {
-            var countImages  = $('.box__mini').length,
-                activePic =  $('.box__mini_state_active'),
+            var countImages  = $('.box__mini').length, // колличество миниаютр всего
+                activePic =  $('.box__mini_state_active'), // активая миниатюра
                 newPhotos;
 
-            if (activePic.index() > countImages - count) {
+            if (activePic.index() >= countImages - count) {
 
                 if (!$('.box__mini').hasClass('disabled_yes') ) {
                     newPhotos = $.getJSON(nextLink+'&callback=?', function (data){
@@ -262,7 +258,7 @@ $.getJSON(nextLink+'&callback=?', function (data){
                             $('<div>')
                                 .addClass('box__mini')
                                 .attr({
-                                    hash: i + nextImages,
+                                    'data-id': i + nextImages,
                                     title: data.entries[i].title
                                 })
                                 .css('background-image', 'url(' +data.entries[i].img.XS.href+ ')')
@@ -281,25 +277,22 @@ $.getJSON(nextLink+'&callback=?', function (data){
                 }
 
                 $('.box__mini').addClass('disabled_yes');
-                newPhotos.success(function () {
-                    $('.box__mini').removeClass('disabled_yes');
-                });
+                    newPhotos.success(function() {
+                        $('.box__mini').removeClass('disabled_yes');
+                    });
             }
+
         }
         $(window).load(function() {
-            loadPicture(2); //Если последняя фотка из партии state_active, подгружаем следующую партию из 30 фоток.
+            loadPicture(1); //Если последняя фотка из партии state_active, подгружаем следующую партию из 30 фоток.
         });
         $('.box__mini, .box__control_direction_right').live('click', function() {
-            loadPicture(16);
+            loadPicture(15);
         });
     });
 
-    scrollBar.live('mousewheel', function(e, delta) {
-        this.scrollLeft -= (delta * 77);
+    scrollBar.mousewheel(function(e, delta) {
+        this.scrollLeft -= (delta * 77); // 77 - ширина миниатюры с учётом отступов
         e.preventDefault();
-    });
-
-    $('.box__thumb-arrow').live('click', function() {
-        scrollItems(this, 231);
     });
 });

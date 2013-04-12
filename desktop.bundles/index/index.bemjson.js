@@ -68,11 +68,7 @@
                                 {
                                     elem: 'inner',
                                     mods: { position: 'bottom' },
-                                    content: [
-                                        { elem: 'thumb-arrow', mods: { direction: 'left' } },
-                                        { elem: 'thumbs-list' },
-                                        { elem: 'thumb-arrow', mods: { direction: 'right' } }
-                                    ]
+                                    content: { elem: 'thumbs-list' }
                                 }
                             ]
                         }
