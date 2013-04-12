@@ -47,7 +47,7 @@ $(function() {
             _thisDadaId;
             photoThumb = $('.box__mini');
 
-            if (!boxControls) { var lastThisImg = param.index() < activeThumbImg.index(); } // фотки, которые левее, чем активаня фотка
+            if (!boxControls) { var lastThisImg = param.attr('data-id') < activeThumbImg.attr('data-id'); } // фотки, которые левее, чем активаня фотка
 
             boxControls ? param.addClass('box__control_disabled_yes') : param.addClass('box__mini_disabled_yes');
 
@@ -125,7 +125,7 @@ $(function() {
     }
 
     function disableArrow() {
-        var activeThumbPos = $('.box__mini_state_active').index();
+        var activeThumbPos = $('.box__mini_state_active').attr('data-id');
 
         (activeThumbPos === 0) ? boxControlLeft.addClass('box__control_visibility_hidden') :
                                  boxControlLeft.removeClass('box__control_visibility_hidden');
@@ -211,7 +211,7 @@ $.getJSON(nextLink+'&callback=?', function (data){
         });
 
         photoBig.live('click', function() {
-            if ($('.box__mini_state_active').index() === data.imageCount - 1) {
+            if ($('.box__mini_state_active').attr('data-id') === data.imageCount - 1) {
                 return false;
             }
             $('.box__control_direction_right').trigger('click');
@@ -222,7 +222,7 @@ $.getJSON(nextLink+'&callback=?', function (data){
 
             if ($(this).hasClass('autoplay_checked_yes')) {
                 (function autoPlay(){
-                    if ($('.box__mini_state_active').index() === data.imageCount - 1) {
+                    if ($('.box__mini_state_active').attr('data-id') === data.imageCount - 1) {
                         autoplay.removeClass('autoplay_checked_yes');
                         return false;
                     }
@@ -250,7 +250,7 @@ $.getJSON(nextLink+'&callback=?', function (data){
                 activePic =  $('.box__mini_state_active'), // активая миниатюра
                 newPhotos;
 
-            if (activePic.index() >= countImages - count) {
+            if (activePic.attr('data-id') >= countImages - count) {
 
                 if (!$('.box__mini').hasClass('disabled_yes') ) {
                     newPhotos = $.getJSON(nextLink+'&callback=?', function (data){
