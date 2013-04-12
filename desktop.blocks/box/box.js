@@ -127,10 +127,10 @@ $(function() {
     function disableArrow() {
         var activeThumbPos = $('.box__mini_state_active').attr('data-id');
 
-        (activeThumbPos === 0) ? boxControlLeft.addClass('box__control_visibility_hidden') :
+        (activeThumbPos == 0) ? boxControlLeft.addClass('box__control_visibility_hidden') :
                                  boxControlLeft.removeClass('box__control_visibility_hidden');
 
-        (activeThumbPos === lastImg) ? boxControlRight.addClass('box__control_visibility_hidden') :
+        (activeThumbPos == lastImg) ? boxControlRight.addClass('box__control_visibility_hidden') :
                                        boxControlRight.removeClass('box__control_visibility_hidden');
     }
 
